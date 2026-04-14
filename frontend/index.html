@@ -63,6 +63,8 @@
       align-items: center;
       gap: 20px;
       overflow: hidden;
+      backdrop-filter: blur(6px);
+      background: rgba(10,12,15,0.7);
     }
 
     header::after {
@@ -232,6 +234,9 @@
       box-shadow: 0 0 30px rgba(0,212,255,0.5);
       transform: translateY(-1px);
     }
+    .btn-upload:active { /*additonally added*/
+  transform: scale(0.96);
+}
 
     #file-input { display: none; }
 
@@ -293,6 +298,8 @@
 
     /* ─── Verdict Banner ────────────────────────────── */
     .verdict-banner {
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      backdrop-filter: blur(6px);
       margin: 0 0 24px;
       border-radius: 12px;
       padding: 20px 24px;
@@ -332,7 +339,7 @@
 
     .verdict-text h2 {
       font-family: var(--font-head);
-      font-size: 22px;
+      font-size: 28px;
       letter-spacing: 2px;
       margin-bottom: 4px;
     }
@@ -340,6 +347,16 @@
     .verdict-banner.violation .verdict-text h2 { color: var(--violation); }
     .verdict-banner.tampered .verdict-text h2  { color: var(--tampered); }
     .verdict-banner.safe .verdict-text h2      { color: var(--safe); }
+
+    .verdict-banner.violation {
+  box-shadow: 0 0 25px rgba(255,59,92,0.3);
+}
+.verdict-banner.safe {
+  box-shadow: 0 0 25px rgba(0,230,118,0.2);
+}
+.verdict-banner.tampered {
+  box-shadow: 0 0 25px rgba(255,170,0,0.3);
+}
 
     .verdict-text p {
       font-size: 13px;
@@ -370,15 +387,19 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       animation: fadeUp 0.5s ease forwards;
       opacity: 0;
+      transition: all 0.25s ease;
+      animation: fadeUp 0.5s ease forwards;
     }
+
+
 
     .match-card:nth-child(1) { animation-delay: 0.1s; }
     .match-card:nth-child(2) { animation-delay: 0.2s; }
     .match-card:nth-child(3) { animation-delay: 0.3s; }
 
     .match-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+     transform: translateY(-6px) scale(1.01);
+  border-color: var(--accent);
     }
 
     .match-card.violation { border-color: rgba(255,59,92,0.35); }
@@ -416,6 +437,9 @@
     }
 
     .match-body {
+display: flex;
+flex-direction: column;
+gap: 10px;
       padding: 14px 16px;
     }
 
@@ -456,7 +480,7 @@
 
     .score-pct {
       font-family: var(--font-head);
-      font-size: 20px;
+      font-size: 26px;
       letter-spacing: 1px;
       min-width: 52px;
       text-align: right;
@@ -642,7 +666,7 @@
   <div class="logo-icon">🛡️</div>
   <div class="logo-text">
     <h1>SPORTS MEDIA GUARDIAN</h1>
-    <p>Unauthorized Image Detection System</p>
+    <p>AI-powered system to detect unauthorized sports media usage</p>
   </div>
   <div class="header-badge" id="system-badge">
     <div class="pulse-dot"></div>
@@ -674,8 +698,8 @@
     <div class="section-label">01 / Upload Image</div>
     <div class="drop-zone" id="drop-zone">
       <span class="drop-icon">📸</span>
-      <div class="drop-title">DROP IMAGE HERE</div>
-      <p class="drop-sub">Drag & drop or click to browse — JPG, PNG, WEBP supported</p>
+      <div class="drop-title">Upload Image for </div>
+      <p class="drop-sub">Drag & drop or click to upload — AI will detect copyright violations instantly</p>
       <button class="btn-upload" onclick="document.getElementById('file-input').click()">
         ⬆ Select Image
       </button>
@@ -857,7 +881,7 @@
     banner.className = `verdict-banner ${status}`;
 
     const icons     = { violation: '🚨', tampered: '⚠️', safe: '✅' };
-    const titles    = { violation: 'COPYRIGHT VIOLATION', tampered: 'IMAGE TAMPERED', safe: 'IMAGE SAFE' };
+    const titles    = { violation: 'HIGH RISK COPY DETECTED', tampered: 'IMAGE TAMPERED', safe: 'ORIGINAL IMAGE' };
     const descs     = {
       violation: 'High-confidence match detected. This image appears to be directly copied from protected sports media.',
       tampered:  'A modified version of a protected image was detected. Possible cropping, filtering, or resizing applied.',
@@ -865,6 +889,7 @@
     };
 
     document.getElementById('verdict-icon').textContent  = icons[status];
+    document.getElementById('verdict-title').style.letterSpacing = "3px";//this is added
     document.getElementById('verdict-title').textContent = titles[status];
     document.getElementById('verdict-desc').textContent  = descs[status];
     document.getElementById('verdict-meta-method').textContent = `⚙ ${data.embedding_method}`;
@@ -892,7 +917,7 @@
             <div class="score-bar-wrap">
               <div class="score-bar" style="width: 0%" data-target="${match.similarity}"></div>
             </div>
-            <div class="score-pct">${match.similarity}%</div>
+            <div class="score-pct">${match.similarity}% Match</div>
           </div>
           <div class="status-chip">
             <div class="chip-dot"></div>
