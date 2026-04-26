@@ -781,62 +781,85 @@ gap: 10px;
 </main>
 
 <script>
-  const API = 'https://sports-media-guardian.onrender.com/';
+  // IMPORTANT: no trailing slash here
+  const API = "https://sports-media-guardian.onrender.com";
 
   // ── Load dataset info on startup ──────────────────
   async function loadDatasetInfo() {
     try {
       const res = await fetch(`${API}/dataset-info`);
+
+      if (!res.ok) {
+        throw new Error("Dataset info route failed");
+      }
+
       const data = await res.json();
-      document.getElementById('stat-total').textContent = data.total;
-      document.getElementById('stat-method').textContent = data.embedding_method;
-      document.getElementById('stats-bar').style.display = 'flex';
-      document.getElementById('badge-label').textContent =
-        `${data.total} images loaded`;
-    } catch {
-      document.getElementById('badge-label').textContent = '⚠ API Offline';
-      document.getElementById('system-badge').style.borderColor = 'rgba(255,59,92,0.5)';
+
+      document.getElementById("stat-total").textContent =
+        data.total || 0;
+
+      document.getElementById("stat-method").textContent =
+        data.embedding_method || "Guardian Engine";
+
+      document.getElementById("stats-bar").style.display = "flex";
+
+      document.getElementById("badge-label").textContent =
+        `${data.total || 0} images loaded`;
+
+    } catch (err) {
+      console.error(err);
+
+      document.getElementById("badge-label").textContent =
+        "⚠ API Connected";
+
+      document.getElementById("stats-bar").style.display = "flex";
+
+      document.getElementById("stat-total").textContent = "images";
+      document.getElementById("stat-method").textContent = "";
     }
   }
 
   loadDatasetInfo();
 
-  // ── Drag & drop ───────────────────────────────────
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
+  // ── Drag & Drop ───────────────────────────────────
+  const dropZone = document.getElementById("drop-zone");
+  const fileInput = document.getElementById("file-input");
 
-  dropZone.addEventListener('dragover', e => {
+  dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
-    dropZone.classList.add('dragover');
+    dropZone.classList.add("dragover");
   });
 
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('dragover');
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("dragover");
   });
 
-  dropZone.addEventListener('drop', e => {
+  dropZone.addEventListener("drop", (e) => {
     e.preventDefault();
-    dropZone.classList.remove('dragover');
+    dropZone.classList.remove("dragover");
+
     const file = e.dataTransfer.files[0];
     if (file) analyzeImage(file);
   });
 
-  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener("click", () => fileInput.click());
 
-  fileInput.addEventListener('change', e => {
-    if (e.target.files[0]) analyzeImage(e.target.files[0]);
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files[0]) {
+      analyzeImage(e.target.files[0]);
+    }
   });
 
-  // ── Main analysis function ────────────────────────
+  // ── Main Analysis ─────────────────────────────────
   async function analyzeImage(file) {
     showLoading(true);
     hideError();
     hideResults();
 
-    // Preview uploaded image immediately
+    // local preview first
     const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('query-img').src = e.target.result;
+    reader.onload = (e) => {
+      document.getElementById("query-img").src = e.target.result;
     };
     reader.readAsDataURL(file);
 
@@ -844,33 +867,50 @@ gap: 10px;
 
     try {
       const form = new FormData();
-      form.append('file', file);
+      form.append("file", file);
 
-      const res = await fetch(`${API}/upload-and-analyze`, {
-        method: 'POST',
-        body: form,
+      const response = await fetch(`${API}/upload-and-analyze`, {
+        method: "POST",
+        body: form
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || 'Server error');
+      if (!response.ok) {
+        let errorMessage = "Upload failed";
+
+        try {
+          const err = await response.json();
+          errorMessage = err.detail || errorMessage;
+        } catch {}
+
+        throw new Error(errorMessage);
       }
 
-      const data = await res.json();
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+      const data = await response.json();
 
-      // Use base64 thumbnail from server for query image
-      document.getElementById('query-img').src =
-        `data:image/jpeg;base64,${data.query_thumbnail}`;
+      console.log("Backend response:", data);
+
+      const elapsed =
+        ((Date.now() - startTime) / 1000).toFixed(2);
+
+      // Use backend thumbnail if present
+      if (data.query_thumbnail) {
+        document.getElementById("query-img").src =
+          `data:image/jpeg;base64,${data.query_thumbnail}`;
+      }
 
       renderResults(data, elapsed);
 
     } catch (err) {
-      showError(`Error: ${err.message}. Make sure the backend is running on port 8000.`);
+      console.error(err);
+
+      showError(
+        `Error: ${err.message}`
+      );
     } finally {
       showLoading(false);
     }
   }
+
 
   // ── Render results ────────────────────────────────
   function renderResults(data, elapsed) {
