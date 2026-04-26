@@ -46,6 +46,9 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
 ```bash
 pip install -r backend/requirements.txt
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+.\.venv\Scripts\activate
+
 ```
 
 ### 3. (Optional) Enable CLIP for better accuracy
@@ -67,7 +70,6 @@ python generate_sample_dataset.py
 cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
-
 ### 6. Open the app
 
 Go to **http://localhost:8000** in your browser.

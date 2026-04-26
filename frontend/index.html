@@ -874,69 +874,163 @@ gap: 10px;
 
   // ── Render results ────────────────────────────────
   function renderResults(data, elapsed) {
-    const status = data.overall_status.toLowerCase();
+  const banner = document.getElementById("verdict-banner");
+  const grid = document.getElementById("matches-grid");
 
-    // Verdict banner
-    const banner = document.getElementById('verdict-banner');
-    banner.className = `verdict-banner ${status}`;
+  grid.innerHTML = "";
 
-    const icons     = { violation: '🚨', tampered: '⚠️', safe: '✅' };
-    const titles    = { violation: 'HIGH RISK COPY DETECTED', tampered: 'IMAGE TAMPERED', safe: 'ORIGINAL IMAGE' };
-    const descs     = {
-      violation: 'High-confidence match detected. This image appears to be directly copied from protected sports media.',
-      tampered:  'A modified version of a protected image was detected. Possible cropping, filtering, or resizing applied.',
-      safe:      'No significant match found in the dataset. This image does not appear to infringe on protected media.',
-    };
+  // ============================================
+  // CASE 1: NON-SPORTS IMAGE REJECTED
+  // ============================================
 
-    document.getElementById('verdict-icon').textContent  = icons[status];
-    document.getElementById('verdict-title').style.letterSpacing = "3px";//this is added
-    document.getElementById('verdict-title').textContent = titles[status];
-    document.getElementById('verdict-desc').textContent  = descs[status];
-    document.getElementById('verdict-meta-method').textContent = `⚙ ${data.embedding_method}`;
-    document.getElementById('verdict-meta-time').textContent   = `⏱ ${elapsed}s`;
+  if (!data.matches || !Array.isArray(data.matches)) {
+    banner.className = "verdict-banner violation";
 
-    // Match cards
-    const grid = document.getElementById('matches-grid');
-    grid.innerHTML = '';
+    document.getElementById("verdict-icon").textContent = "🚫";
+    document.getElementById("verdict-title").textContent =
+      "NON-SPORTS CONTENT REJECTED";
 
-    data.matches.forEach((match, idx) => {
-      const s = match.status.toLowerCase();
-      const card = document.createElement('div');
-      card.className = `match-card ${s}`;
-      card.innerHTML = `
-        <div class="match-thumb-wrap">
-          <img src="data:image/jpeg;base64,${match.thumbnail}" alt="${match.filename}" loading="lazy" />
-          <div class="match-rank"># ${idx + 1}</div>
-        </div>
+    document.getElementById("verdict-desc").textContent =
+      data.reason || "This uploaded image is not recognized as sports media.";
+
+    document.getElementById("verdict-meta-method").textContent =
+      `🛡 Guardian Filter`;
+
+    document.getElementById("verdict-meta-time").textContent =
+      `⏱ ${elapsed}s`;
+
+    grid.innerHTML = `
+      <div class="match-card violation" style="grid-column: span 3;">
         <div class="match-body">
           <div class="match-filename">
-            ${match.filename}
-            <span class="category-tag">${match.category}</span>
+            Detected Label: ${data.detected_label || "Unknown"}
           </div>
+
           <div class="score-row">
             <div class="score-bar-wrap">
-              <div class="score-bar" style="width: 0%" data-target="${match.similarity}"></div>
+              <div
+                class="score-bar"
+                style="width: ${data.confidence || 0}%"
+              ></div>
             </div>
-            <div class="score-pct">${match.similarity}% Match</div>
+
+            <div class="score-pct">
+              ${data.confidence || 0}% Confidence
+            </div>
           </div>
+
           <div class="status-chip">
             <div class="chip-dot"></div>
-            ${match.status}
+            REJECTED BEFORE PIRACY ANALYSIS
           </div>
         </div>
-      `;
-      grid.appendChild(card);
-    });
+      </div>
+    `;
 
     showResults();
-
-    // Animate score bars after a short delay
-    setTimeout(() => {
-      document.querySelectorAll('.score-bar').forEach(bar => {
-        bar.style.width = `${bar.dataset.target}%`;
-      });
-    }, 100);
+    return;
   }
+
+  // ============================================
+  // CASE 2: SPORTS IMAGE → NORMAL ANALYSIS
+  // ============================================
+
+  const status = data.overall_status.toLowerCase();
+
+  banner.className = `verdict-banner ${status}`;
+
+  const icons = {
+    violation: "🚨",
+    tampered: "⚠️",
+    safe: "✅"
+  };
+
+  const titles = {
+    violation: "HIGH RISK COPY DETECTED",
+    tampered: "IMAGE TAMPERED",
+    safe: "ORIGINAL IMAGE"
+  };
+
+  const descs = {
+    violation:
+      "High-confidence match detected. This image appears to be directly copied from protected sports media.",
+
+    tampered:
+      "A modified version of a protected image was detected. Possible cropping, filtering, or resizing applied.",
+
+    safe:
+      "No significant match found in the dataset. This image does not appear to infringe on protected media."
+  };
+
+  document.getElementById("verdict-icon").textContent =
+    icons[status] || "🛡";
+
+  document.getElementById("verdict-title").textContent =
+    titles[status] || "ANALYSIS COMPLETE";
+
+  document.getElementById("verdict-desc").textContent =
+    descs[status] || "Analysis finished successfully.";
+
+  document.getElementById("verdict-meta-method").textContent =
+    `⚙ ${data.embedding_method || "Guardian Engine"}`;
+
+  document.getElementById("verdict-meta-time").textContent =
+    `⏱ ${elapsed}s`;
+
+  data.matches.forEach((match, idx) => {
+    const s = match.status.toLowerCase();
+
+    const card = document.createElement("div");
+    card.className = `match-card ${s}`;
+
+    card.innerHTML = `
+      <div class="match-thumb-wrap">
+        <img
+          src="data:image/jpeg;base64,${match.thumbnail}"
+          alt="${match.filename}"
+          loading="lazy"
+        />
+        <div class="match-rank"># ${idx + 1}</div>
+      </div>
+
+      <div class="match-body">
+        <div class="match-filename">
+          ${match.filename}
+          <span class="category-tag">${match.category}</span>
+        </div>
+
+        <div class="score-row">
+          <div class="score-bar-wrap">
+            <div
+              class="score-bar"
+              style="width: 0%"
+              data-target="${match.similarity}"
+            ></div>
+          </div>
+
+          <div class="score-pct">
+            ${match.similarity}% Match
+          </div>
+        </div>
+
+        <div class="status-chip">
+          <div class="chip-dot"></div>
+          ${match.status}
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+
+  showResults();
+
+  setTimeout(() => {
+    document.querySelectorAll(".score-bar").forEach(bar => {
+      bar.style.width = `${bar.dataset.target}%`;
+    });
+  }, 100);
+}
 
   // ── UI helpers ────────────────────────────────────
   function showLoading(show) {
