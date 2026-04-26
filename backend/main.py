@@ -380,3 +380,8 @@ if frontend_dir.exists():
         ),
         name="frontend"
     )
+
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
