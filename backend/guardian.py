@@ -26,7 +26,14 @@ for folder in [INPUT_FOLDER, ALLOWED_FOLDER, BLOCKED_FOLDER]:
 # ============================================
 
 print("🛡️ Loading Universal Guardian...")
-model = ResNet50(weights="imagenet")
+print("🛡️ Loading Universal Guardian...")
+
+try:
+    model = ResNet50(weights="imagenet")
+    print("✅ ResNet50 loaded successfully")
+except Exception as e:
+    print(f"⚠️ Failed to load ResNet50: {e}")
+    model = None
 
 # ============================================
 # SPORTS DETECTION KEYWORDS
@@ -55,6 +62,8 @@ SPORTS_KEYWORDS = [
 # ============================================
 
 def is_sports_image(img_path):
+    if model is None:
+        return False, "model_not_loaded", 0.0, "model_not_loaded"
     img = image.load_img(img_path, target_size=(224, 224))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)

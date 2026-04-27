@@ -18,7 +18,10 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 # Import Guardian sports classifier
-from guardian import is_sports_image
+try:
+    from backend.guardian import is_sports_image
+except ImportError:
+    from guardian import is_sports_image
 
 app = FastAPI(title="Sports Media Guardian API")
 
