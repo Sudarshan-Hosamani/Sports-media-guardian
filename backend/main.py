@@ -235,7 +235,7 @@ async def upload_and_analyze(file: UploadFile = File(...)):
     # LAYER 1: SPORTS FILTER (Guardian)
     # ============================================
 
-    temp_path = f"temp_{file.filename}"
+    temp_path = os.path.join("/tmp", f"temp_{file.filename}")
 
     try:
         with open(temp_path, "wb") as f:

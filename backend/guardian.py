@@ -24,17 +24,8 @@ for folder in [INPUT_FOLDER, ALLOWED_FOLDER, BLOCKED_FOLDER]:
 # ============================================
 # LOAD PRETRAINED MODEL
 # ============================================
-
-print("🛡️ Loading Universal Guardian...")
-print("🛡️ Loading Universal Guardian...")
-
-try:
-    model = ResNet50(weights="imagenet")
-    print("✅ ResNet50 loaded successfully")
-except Exception as e:
-    print(f"⚠️ Failed to load ResNet50: {e}")
-    model = None
-
+print("🛡️ Guardian initialized (lazy loading enabled)")
+model = None
 # ============================================
 # SPORTS DETECTION KEYWORDS
 # ============================================
@@ -62,8 +53,10 @@ SPORTS_KEYWORDS = [
 # ============================================
 
 def is_sports_image(img_path):
+    global model
     if model is None:
-        return False, "model_not_loaded", 0.0, "model_not_loaded"
+        print("🛡️ Loading ResNet50 on first request...")
+        model = ResNet50(weights="imagenet")
     img = image.load_img(img_path, target_size=(224, 224))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
