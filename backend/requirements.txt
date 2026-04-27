@@ -3,13 +3,4 @@ uvicorn[standard]>=0.29.0
 python-multipart>=0.0.9
 Pillow>=10.0.0
 numpy>=1.24.0
-<<<<<<< HEAD
 tensorflow==2.16.1
-scikit-learn
-# Optional but recommended: CLIP for best accuracy
-# Uncomment if you have a GPU or want better results:
- torch>=2.0.0
- git+https://github.com/openai/CLIP.git
-=======
-tensorflow==2.16.1
->>>>>>> f9b5b0f (Fix Render deployment config and stabilize backend)
