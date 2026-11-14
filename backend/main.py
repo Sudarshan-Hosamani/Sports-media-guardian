@@ -1,7 +1,10 @@
 """
 Sports Media Guardian - Backend API
-Layer 1: Sports relevance detection (Guardian)
-Layer 2: Piracy detection using CLIP embeddings + cosine similarity
+Authors & Contributors: Abhishek M S, Sudarshan Hosamani
+
+Architecture:
+- Layer 1: Sports relevance detection (Guardian)
+- Layer 2: Piracy detection using CLIP embeddings + cosine similarity
 """
 
 from fastapi import FastAPI, File, UploadFile, HTTPException

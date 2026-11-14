@@ -9,14 +9,17 @@
 ```
 sports-media-guardian/
 ├── backend/
-│   ├── main.py              # FastAPI backend — all logic here
+│   ├── main.py              # FastAPI backend — all routing & similarity logic
+│   ├── guardian.py          # Layer 1: Sports relevance classifier
 │   └── requirements.txt     # Python dependencies
 ├── frontend/
 │   └── index.html           # Single-file UI (served by FastAPI)
+├── Models/
+│   └── sports_filter.keras  # Pretrained model weights for sports detection
 ├── dataset/
-│   ├── original/            # ← Put your original protected images here
-│   ├── modified/            # ← Put tampered/modified versions here
-│   └── unrelated/           # ← Put unrelated "safe" images here
+│   ├── original/            # ← Official protected images
+│   ├── modified/            # ← Tampered / modified versions
+│   └── unrelated/           # ← Unrelated 'safe' control images
 ├── generate_sample_dataset.py   # Creates synthetic test images
 └── run.sh                       # One-command setup & run
 ```
@@ -38,17 +41,14 @@ Then open → **http://localhost:8000**
 ### 1. Create a virtual environment
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate        # Windows: .\.venv\Scripts\Activate.ps1
 ```
 
 ### 2. Install dependencies
 
 ```bash
 pip install -r backend/requirements.txt
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
-.\.venv\Scripts\activate
-
 ```
 
 ### 3. (Optional) Enable CLIP for better accuracy
@@ -70,6 +70,7 @@ python generate_sample_dataset.py
 cd backend
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
+
 ### 6. Open the app
 
 Go to **http://localhost:8000** in your browser.
@@ -90,9 +91,9 @@ Go to **http://localhost:8000** in your browser.
 ```
 cosine_similarity(query_embedding, dataset_embedding) → score [0–1]
 
-score > 0.85  → 🚨 VIOLATION  (direct copy)
-score 0.70–0.85 → ⚠️ TAMPERED  (cropped/filtered/resized)
-score < 0.70  → ✅ SAFE       (no match)
+score > 0.85      → 🚨 VIOLATION  (direct copy)
+score 0.70–0.85   → ⚠️ TAMPERED   (cropped / filtered / resized)
+score < 0.70      → ✅ SAFE       (no match)
 ```
 
 ### API Endpoints
@@ -127,3 +128,10 @@ Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.bmp`
 - Dataset is loaded once at startup; embeddings cached in RAM
 - Frontend is a single HTML file served by FastAPI (no build step)
 - CLIP install is optional — the fallback works for demos
+
+---
+
+## 👥 Contributors
+
+- **Abhishek M S** ([@abhishekmsofficial2005](mailto:abhishekmsofficial2005@gmail.com))
+- **Sudarshan Hosamani** ([@Sudarshan-Hosamani](https://github.com/Sudarshan-Hosamani))
