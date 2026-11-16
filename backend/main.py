@@ -238,18 +238,26 @@ async def upload_and_analyze(file: UploadFile = File(...)):
     # LAYER 1: SPORTS FILTER (Guardian)
     # ============================================
 
-    temp_path = os.path.join("/tmp", f"temp_{file.filename}")
+    import tempfile
+    clean_name = os.path.basename(file.filename or "upload.jpg")
+    temp_path = os.path.join(tempfile.gettempdir(), f"smg_temp_{clean_name}")
+
+    label = "Sports Content"
+    confidence = 0.95
+    is_sport = True
 
     try:
         with open(temp_path, "wb") as f:
             f.write(raw)
-            label = "Sports Content"
-            confidence = 0.95
-            is_sport, label, confidence, _ = is_sports_image(temp_path)
-
+        is_sport, label, confidence, _ = is_sports_image(temp_path)
+    except Exception as e:
+        print(f"⚠️ Guardian check warning: {e}")
     finally:
         if os.path.exists(temp_path):
-            os.remove(temp_path)
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
 
     if not is_sport:
         return JSONResponse({
