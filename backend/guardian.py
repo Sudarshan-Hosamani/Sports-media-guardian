@@ -1,14 +1,18 @@
-import tensorflow as tf
 import numpy as np
 import os
 import shutil
 
-from tensorflow.keras.applications.resnet50 import (
-    ResNet50,
-    preprocess_input,
-    decode_predictions
-)
-from tensorflow.keras.preprocessing import image
+try:
+    import tensorflow as tf
+    from tensorflow.keras.applications.resnet50 import (
+        ResNet50,
+        preprocess_input,
+        decode_predictions
+    )
+    from tensorflow.keras.preprocessing import image
+    HAS_TF = True
+except ImportError:
+    HAS_TF = False
 
 # ============================================
 # FOLDERS

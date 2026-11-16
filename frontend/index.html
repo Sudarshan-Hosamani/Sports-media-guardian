@@ -782,7 +782,9 @@ gap: 10px;
 
 <script>
   // IMPORTANT: no trailing slash here
-  const API = "https://sports-media-guardian.onrender.com";
+  const API = (window.location.origin && window.location.origin !== "null" && !window.location.origin.startsWith("file"))
+    ? window.location.origin
+    : "http://127.0.0.1:8000";
 
   // ── Load dataset info on startup ──────────────────
   async function loadDatasetInfo() {
